@@ -6,8 +6,7 @@ import type { AuthStackScreenProps } from '../../navigation/types';
 
 export function SignUpScreen({ navigation }: AuthStackScreenProps<'SignUp'>) {
   return (
-    <ScreenContainer>
-      <Text style={styles.title}>Create your account</Text>
+    <ScreenContainer title="Create your account">
       <Text style={styles.subtitle}>Track paths, label zones, and sync across devices.</Text>
 
       <Card style={styles.card}>
@@ -25,12 +24,6 @@ export function SignUpScreen({ navigation }: AuthStackScreenProps<'SignUp'>) {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.bold,
-    color: colors.primary800,
-    marginBottom: spacing.xs,
-  },
   subtitle: {
     fontSize: typography.sizes.md,
     color: colors.textSecondary,

@@ -1,42 +1,52 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MapScreen } from '../screens/main/MapScreen';
 import { PathsScreen } from '../screens/main/PathsScreen';
 import { ZonesScreen } from '../screens/main/ZonesScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
-import { colors, typography } from '../theme';
+import { colors } from '../theme';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Simple text glyphs for now; swap for a proper icon set (e.g. @expo/vector-icons)
-// once the design system grows beyond Phase 1.
-const TAB_ICONS: Record<keyof MainTabParamList, string> = {
-  Map: '🗺️',
-  Paths: '👣',
-  Zones: '📍',
-  Profile: '👤',
+// Simple line-icon set (Asana/Health-style minimal tab bar) via @expo/vector-icons.
+const TAB_ICONS: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+  Map: 'map-outline',
+  Paths: 'walk-outline',
+  Zones: 'location-outline',
+  Profile: 'person-outline',
 };
 
-function TabIcon({ route, color }: { route: keyof MainTabParamList; color: string }) {
-  return <Text style={[styles.icon, { color }]}>{TAB_ICONS[route]}</Text>;
-}
+const TAB_ICONS_FOCUSED: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+  Map: 'map',
+  Paths: 'walk',
+  Zones: 'location',
+  Profile: 'person',
+};
 
 export function MainTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerStyle: { backgroundColor: colors.primary700 },
-        headerTintColor: colors.white,
-        headerTitleStyle: { fontWeight: '600' },
+        // Asana/Health-style minimal header: plain white, no colored bar —
+        // each screen renders its own bold large title in-content instead.
+        headerShown: false,
         tabBarActiveTintColor: colors.primary700,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontSize: typography.sizes.xs },
-        tabBarIcon: ({ color }) => (
-          <TabIcon route={route.name as keyof MainTabParamList} color={color} />
-        ),
+        tabBarStyle: {
+          backgroundColor: colors.white,
+          borderTopColor: colors.border,
+          height: 58,
+          paddingBottom: 6,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarIcon: ({ color, size, focused }) => {
+          const name = route.name as keyof MainTabParamList;
+          const icon = focused ? TAB_ICONS_FOCUSED[name] : TAB_ICONS[name];
+          return <Ionicons name={icon} size={size} color={color} />;
+        },
       })}
     >
       <Tab.Screen name="Map" component={MapScreen} />
@@ -46,11 +56,5 @@ export function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  icon: {
-    fontSize: typography.sizes.lg,
-  },
-});
 
 export default MainTabNavigator;

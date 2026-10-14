@@ -6,8 +6,7 @@ import { isSupabaseConfigured } from '../../lib/supabase';
 
 export function ProfileScreen() {
   return (
-    <ScreenContainer>
-      <Text style={styles.title}>Profile</Text>
+    <ScreenContainer title="Profile">
       <Card style={styles.card}>
         <Text style={styles.body}>
           Account details, sync status, and app settings will live here.
@@ -22,12 +21,6 @@ export function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.bold,
-    color: colors.primary800,
-    marginBottom: spacing.md,
-  },
   card: {
     gap: spacing.sm,
   },

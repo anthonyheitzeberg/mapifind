@@ -57,10 +57,10 @@ const styles = StyleSheet.create({
   base: {
     paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: 50,
   },
   pressed: {
     opacity: 0.85,
