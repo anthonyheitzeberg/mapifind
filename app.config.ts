@@ -38,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       '@rnmapbox/maps',
       {
         RNMapboxMapsImpl: 'mapbox',
-        RNMapboxMapsDownloadToken: MAPBOX_DOWNLOAD_TOKEN,
+        RNMAPBOX_MAPS_DOWNLOAD_TOKEN: MAPBOX_DOWNLOAD_TOKEN,
       },
     ],
     'expo-sqlite',
