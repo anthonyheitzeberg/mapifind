@@ -55,5 +55,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     // Exposed to the app via `expo-constants` (Constants.expoConfig?.extra).
     mapboxAccessToken: MAPBOX_ACCESS_TOKEN,
+    eas: {
+      projectId: 'e4dbfba6-2cc6-40ad-a183-f2ec9b9bd201',
+    },
   },
 });
