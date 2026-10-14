@@ -1,4 +1,4 @@
-# Mapifind
+# Mapifind 🗺️
 
 Mapifind is a Strava-like path recording and replay app with custom, labeled
 geofence **zones** (e.g. "Zone 12") — built for hikers, farmers, and tourism
