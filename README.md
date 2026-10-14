@@ -92,9 +92,11 @@ npm run typecheck     # tsc --noEmit
 ```
 app.config.ts          # Expo config (Mapbox plugin, env-driven secrets)
 App.tsx                # App root: providers + navigation
+eas.json                # EAS Build profiles (development/preview/production)
+.github/workflows/      # CI (lint/typecheck) + EAS build automation
 src/
   theme/                # Color/spacing/typography design tokens
-  components/           # Reusable themed UI primitives (Button, Card, ScreenContainer)
+  components/           # Reusable themed UI primitives (Button, Card, ScreenContainer, SectionHeader, StatBlock)
   navigation/           # Auth stack + Main bottom-tab navigator
   screens/
     auth/               # Login / SignUp placeholders
@@ -103,13 +105,80 @@ src/
     supabase.ts         # Supabase client singleton (env-driven, safe fallback)
 ```
 
+## Design system
+
+The UI takes cues from two apps the team likes:
+
+- **Asana mobile** for layout: soft, generously-rounded cards with subtle
+  shadows (no hard borders), pill-shaped buttons, minimal white headers with
+  a bold in-content page title instead of a colored app bar, and muted
+  uppercase section labels grouping related content.
+- **Apple Health** for typography: the platform system font (San Francisco on
+  iOS / Roboto on Android — no custom font bundling needed), an oversized
+  bold "large title" at the top of each screen, and a "big number, small
+  caption" pattern (see the new `StatBlock` component) for stats like
+  distance, duration, and pace.
+
+Brand color stays green + green-shades + white (see `src/theme/theme.ts`).
+
+## Branching strategy & releases
+
+- **`develop`** — the active working branch. All day-to-day commits/PRs
+  target this branch. Every push here triggers an automatic Android preview
+  build (see CI/CD below) so testers always have the latest build.
+- **`main`** — production. Only updated by merging `develop` into `main` when
+  a set of changes is ready to ship. Production builds/store submissions are
+  triggered manually from `main` (see CI/CD below) — never automatically.
+
+Typical flow: branch off `develop` → PR back into `develop` → CI
+(lint/typecheck) must pass → merge → preview build auto-builds → when ready
+to release, open a PR from `develop` into `main` → merge → manually run the
+production build workflow.
+
+## CI/CD
+
+Two GitHub Actions concerns, in `.github/workflows/`:
+
+1. **`ci.yml`** — runs `npm run lint` + `npm run typecheck` on every push and
+   PR to `develop`/`main`. No account setup required; runs out of the box.
+2. **`eas-preview.yml`** — on every push to `develop`, builds an installable
+   Android APK (EAS "preview" profile, internal distribution — no Google
+   Play review needed) and posts the install link in the workflow run's job
+   summary. This is how a non-technical tester (e.g. a friend) always gets
+   the latest build — see **[FRIEND_TESTING.md](./FRIEND_TESTING.md)** for
+   the install steps you can forward to them.
+3. **`eas-production.yml`** — manually triggered (Actions tab → "Run
+   workflow") from `main` only, to build (and optionally submit to the app
+   store) a production release. Intentionally not automatic.
+
+### One-time EAS/Expo setup required
+
+The build workflows need an Expo account and a repo secret:
+
+1. Create a free account at [expo.dev](https://expo.dev) if you don't have
+   one.
+2. Run `npx eas-cli@latest login` locally once, then
+   `npx eas-cli@latest build:configure` from the project root — this links
+   the repo to an Expo project (writes a project ID into the Expo config).
+3. Generate a personal access token at
+   [expo.dev → Account settings → Access tokens](https://expo.dev/accounts/[your-account]/settings/access-tokens).
+4. In this GitHub repo: **Settings → Secrets and variables → Actions → New
+   repository secret**, name it `EXPO_TOKEN`, paste the token.
+
+iOS preview/production builds aren't wired up yet — Apple's internal
+distribution requires an active Apple Developer Program membership
+($99/year). Once you have one, add an iOS job to `eas-preview.yml` and flesh
+out `ios` build settings in `eas.json`.
+
 ## Roadmap (phased)
 
 - **Phase 0 — Setup** ✅: Expo + TypeScript scaffold, Mapbox/Supabase/navigation
   deps installed and configured, env var pattern, linting/formatting, this
   README.
-- **Phase 1 — Theme + navigation shell** ✅: Green/white theme tokens, Auth +
-  Main tab navigation shell, themed UI primitives, Supabase client singleton.
+- **Phase 1 — Theme + navigation shell** ✅: Green/white theme tokens, Asana +
+  Apple Health-inspired design system, Auth + Main tab navigation shell,
+  themed UI primitives, Supabase client singleton, GitHub CI/CD + EAS preview
+  builds for tester distribution.
 - **Phase 2 — Auth**: Real Supabase email/password (and/or OAuth) sign-in,
   session persistence, and gating the Main tabs behind an authenticated
   session.
@@ -134,3 +203,6 @@ src/
 - Create a **Supabase** project and copy its URL + anon key into `.env`.
 - Run `npx expo prebuild` and a dev client build at least once before running
   on a physical device or simulator.
+- Create a free **Expo** account, run `eas login` + `eas build:configure`
+  once, and add an `EXPO_TOKEN` repo secret (see CI/CD section above) so the
+  automatic preview builds work.

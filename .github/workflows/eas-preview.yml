@@ -1,0 +1,64 @@
+name: EAS Preview Build (develop)
+
+# Builds an installable Android APK (EAS "preview" profile, internal
+# distribution) every time develop changes, so a non-technical tester (e.g.
+# a friend testing the app) always has a fresh build to install — no Expo
+# Go, no Mac/Xcode needed on their end, no app store review.
+#
+# Requires a repo secret `EXPO_TOKEN` — a personal access token generated at
+# https://expo.dev/accounts/<you>/settings/access-tokens, added under
+# Settings → Secrets and variables → Actions in this GitHub repo.
+#
+# iOS preview builds aren't wired up here yet: Apple's internal/TestFlight
+# distribution requires an Apple Developer Program membership. Once that's
+# set up, add an `eas-preview-ios` job mirroring this one with
+# `--platform ios`.
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch: {}
+
+jobs:
+  eas-preview-android:
+    name: Build Android preview APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android preview (internal distribution APK)
+        run: eas build --platform android --profile preview --non-interactive --json > build-output.json
+
+      - name: Summarize build output
+        if: always()
+        run: |
+          echo "### 📱 Mapifind Android preview build" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          BUILD_URL=$(node -e "
+            try {
+              const r = JSON.parse(require('fs').readFileSync('build-output.json', 'utf8'));
+              const b = Array.isArray(r) ? r[0] : r;
+              console.log(b?.artifacts?.buildUrl || '');
+            } catch (e) { console.log(''); }
+          ")
+          if [ -n "$BUILD_URL" ]; then
+            echo "✅ Direct APK download link:" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "$BUILD_URL" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Send this link to your tester — opening it on an Android phone downloads the APK directly. See FRIEND_TESTING.md for install steps." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Build finished — open your [Expo dashboard](https://expo.dev) → this project → Builds to get the install link/QR code." >> "$GITHUB_STEP_SUMMARY"
+          fi

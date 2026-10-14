@@ -1,0 +1,31 @@
+name: CI
+
+# Runs lint + typecheck on every push to develop/main and on every PR
+# targeting them. Keep this fast and dependency-free (no native builds) —
+# EAS builds are handled separately in eas-build.yml.
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  lint-typecheck:
+    name: Lint & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
